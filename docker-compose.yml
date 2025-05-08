@@ -1,0 +1,75 @@
+services:
+  teslamate:
+    image: teslamate/teslamate:latest
+    restart: always
+    depends_on:
+      - database
+      - mqtt
+    environment:
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=secret
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - MQTT_HOST=mqtt
+      - MQTT_USERNAME=teslamate
+      - MQTT_PASSWORD=secret
+      - VIRTUAL_HOST=teslamate.local
+      - TZ=Europe/Moscow
+    ports:
+      - 4000:4000
+    volumes:
+      - ./import:/import
+
+  database:
+    image: postgres:16.7
+    restart: always
+    environment:
+      - POSTGRES_USER=teslamate
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=teslamate
+    volumes:
+      - teslamate-db:/var/lib/postgresql/data
+
+  grafana:
+    image: teslamate/grafana:latest
+    restart: always
+    environment:
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=secret
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - 3000:3000
+    volumes:
+      - teslamate-grafana-data:/var/lib/grafana
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: mqtt
+    restart: always
+    ports:
+      - 1883:1883
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: teslamate-backup
+    depends_on:
+      - database
+    volumes:
+      - ./backups:/backups
+      - ./backup-logs:/var/log
+
+volumes:
+  teslamate-db:
+  teslamate-grafana-data:
+  mosquitto-data:
+  mosquitto-log:

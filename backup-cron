@@ -1,0 +1,1 @@
+0 3 * * * pg_dump -U teslamate -h database -d teslamate > /backups/teslamate_$(date +\%F_\%H-\%M-\%S).sql && find /backups -type f -name "*.sql" -mtime +7 -delete >> /backups/logs/cron.log 2>&1
