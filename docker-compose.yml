@@ -15,6 +15,7 @@ services:
       - MQTT_PASSWORD=secret
       - VIRTUAL_HOST=teslamate.local
       - TZ=Europe/Moscow
+      - ENCRYPTION_KEY=8qoJUgxsp2bS9hlB6tmkLlLRKGWqTFCSETsQTjXsOgA=
     ports:
       - 4000:4000
     volumes:
